@@ -1,3 +1,5 @@
+'use strict';
+
 // Configuração do Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyAKTwMCe5sUPoZz5jwSYV1WiNmGjGxNxY8",
@@ -14,7 +16,6 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 document.addEventListener('DOMContentLoaded', () => {
-    // ✅ VERIFICAÇÃO ADICIONAL: Garante que utils.js foi carregado
     if (typeof showToast === 'undefined' || typeof toggleLoading === 'undefined') {
         console.error("utils.js não foi carregado corretamente.");
         return;
@@ -23,16 +24,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Verifica se o usuário está logado
     auth.onAuthStateChanged(user => {
         if (!user) {
-            // ✅ ALTERADO: usa showToast em vez de alert
             showToast("Você precisa estar logado para cadastrar um serviço.", "error");
-            // Adiciona um pequeno delay para o usuário ver o toast antes de ser redirecionado
             setTimeout(() => {
                 window.location.href = 'login.html';
             }, 2000);
         }
     });
 
-    // Elementos do DOM (sem alterações)
+    // Elementos do DOM
     const productName = document.getElementById('productName');
     const deliveryTime = document.getElementById('deliveryTime');
     const price = document.getElementById('price');
@@ -47,7 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let uploadedImageBase64 = "";
 
-    // Lógica de UI (sem alterações)
+    // Lógica para categoria e preview da imagem
     categorySelect.addEventListener('change', () => {
         customCategoryGroup.style.display = (categorySelect.value === 'outros') ? 'block' : 'none';
         if (categorySelect.value !== 'outros') customCategoryInput.value = '';
@@ -73,9 +72,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Função de validação
     const checkFormValidity = () => {
-        const areTextFieldsValid = productName.value.trim() !== '' && deliveryTime.value.trim() !== '' && price.value.trim() !== '' && description.value.trim() !== '' && sellerName.value.trim() !== '';
-        const isCategoryValid = (categorySelect.value !== '') && (categorySelect.value !== 'outros' || customCategoryInput.value.trim() !== '');
+        const areTextFieldsValid = productName.value.trim() !== '' &&
+                                 deliveryTime.value.trim() !== '' &&
+                                 price.value.trim() !== '' &&
+                                 description.value.trim() !== '' &&
+                                 sellerName.value.trim() !== '';
+        const isCategoryValid = (categorySelect.value !== '') &&
+                                (categorySelect.value !== 'outros' || customCategoryInput.value.trim() !== '');
         const isImageUploaded = uploadedImageBase64 !== "";
         publishBtn.disabled = !(areTextFieldsValid && isCategoryValid && isImageUploaded);
     };
@@ -85,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     customCategoryInput.addEventListener('input', checkFormValidity);
 
-    // ✅ ALTERADO: Ação de publicar com toggleLoading e showToast
+    // Ação do botão de publicar
     publishBtn.addEventListener('click', async () => {
         const user = auth.currentUser;
         if (!user) {
@@ -93,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        toggleLoading(true); // Mostra a tela de carregamento
+        toggleLoading(true);
 
         const productCategory = (categorySelect.value === 'outros') ? customCategoryInput.value.trim() : categorySelect.value;
         
@@ -112,18 +117,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             await db.collection('produtos').add(product);
-            
             showToast("Serviço publicado com sucesso!", "success");
-            
             setTimeout(() => {
                 window.location.href = 'vendas.html';
-            }, 1500); // Espera 1.5s para o usuário ver o toast
+            }, 1500);
 
         } catch (error) {
             console.error("Erro ao salvar no Firestore: ", error);
             showToast("Erro ao publicar o serviço. Tente novamente.", "error");
         } finally {
-            // O bloco finally garante que o loading será removido, mesmo se der erro
             toggleLoading(false);
         }
     });

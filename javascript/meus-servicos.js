@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // FUNÇÃO PARA CARREGAR OS PRODUTOS DO USUÁRIO
+    // Função para carregar apenas os produtos do usuário logado
     const loadUserProducts = async () => {
         if (!currentUser) return;
         loader.style.display = 'flex';
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // FUNÇÃO PARA RENDERIZAR OS CARDS (sem alterações)
+    // Função para renderizar os cards
     const renderProducts = (products) => {
         productGrid.innerHTML = '';
         products.forEach(product => {
@@ -69,11 +69,11 @@ document.addEventListener('DOMContentLoaded', () => {
             card.setAttribute('data-id', product.id);
             card.innerHTML = `
                 <div class="product-image-container">
-                    <img src="${product.imagem}" alt="${product.nome}" class="product-image">
+                    <img src="${product.imagem}" alt="Eu vou ${product.nome}" class="product-image">
                     <div class="product-price">${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.preco)}</div>
                 </div>
                 <div class="product-info">
-                    <h4 class="product-title">${product.nome}</h4>
+                    <h4 class="product-title">Eu vou ${product.nome}</h4>
                     <div class="card-actions">
                         <button class="action-btn btn-edit"><i class="fas fa-edit"></i> Editar</button>
                         <button class="action-btn btn-delete"><i class="fas fa-trash"></i> Excluir</button>
@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // FUNÇÕES DO MODAL (sem alterações)
+    // Funções do Modal de Edição
     const openEditModal = (product) => {
         document.getElementById('editProductId').value = product.id;
         document.getElementById('editProductName').value = product.nome;
@@ -100,12 +100,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.target === editModal) closeEditModal();
     });
 
-    // ✅ ALTERADO: FUNÇÃO PARA SALVAR COM toggleLoading e showToast
+    // Função para salvar as alterações
     editForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         const productId = document.getElementById('editProductId').value;
-        
-        toggleLoading(true); // Mostra o loading global
+        toggleLoading(true);
 
         const updatedData = {
             nome: document.getElementById('editProductName').value,
@@ -117,33 +116,31 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await db.collection('produtos').doc(productId).update(updatedData);
             closeEditModal();
-            await loadUserProducts(); // Recarrega os produtos para mostrar os dados atualizados
+            await loadUserProducts();
             showToast("Serviço atualizado com sucesso!", "success");
         } catch (error) {
             console.error("Erro ao atualizar o produto: ", error);
             showToast("Falha ao atualizar o serviço. Tente novamente.", "error");
         } finally {
-            toggleLoading(false); // Esconde o loading global
+            toggleLoading(false);
         }
     });
 
-    // ✅ ALTERADO: FUNÇÃO PARA EXCLUIR COM toggleLoading e showToast
+    // Função para excluir um produto
     const deleteProduct = async (productId) => {
         if (!confirm("Tem certeza de que deseja excluir este serviço? Esta ação não pode ser desfeita.")) {
             return;
         }
-
-        toggleLoading(true); // Mostra o loading global
-
+        toggleLoading(true);
         try {
             await db.collection('produtos').doc(productId).delete();
-            await loadUserProducts(); // Recarrega a lista para remover o card da tela
+            await loadUserProducts();
             showToast("Serviço excluído com sucesso!", "success");
         } catch (error) {
             console.error("Erro ao excluir o produto: ", error);
             showToast("Falha ao excluir o serviço. Tente novamente.", "error");
         } finally {
-            toggleLoading(false); // Esconde o loading global
+            toggleLoading(false);
         }
     };
 });

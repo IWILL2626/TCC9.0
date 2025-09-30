@@ -54,9 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // =======================================================
-    // ===== LÓGICA DOS MENUS (CÓDIGO ORIGINAL MANTIDO) ======
-    // =======================================================
+    // --- LÓGICA DOS MENUS (CÓDIGO ORIGINAL MANTIDO) ---
     if (settingsBtn && settingsDropdown) {
         settingsBtn.addEventListener('click', (event) => {
             event.stopPropagation();
@@ -92,13 +90,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ================================================================
-    // ===== SEÇÃO DE CARREGAMENTO DE PRODUTOS E LÓGICA DO MODAL ======
-    // ================================================================
+    // --- SEÇÃO DE CARREGAMENTO DE PRODUTOS E LÓGICA DO MODAL ---
     
     let allProducts = []; // Armazena todos os produtos carregados do Firebase
 
-    // ✅ FUNÇÃO PARA BUSCAR DADOS DO VENDEDOR (SEU CÓDIGO ORIGINAL, JÁ ESTAVA PERFEITO)
+    // Função para buscar dados do vendedor
     const getSellerData = async (sellerId) => {
         if (!sellerId) return null;
         try {
@@ -110,13 +106,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // ✅ FUNÇÃO PARA MOSTRAR O MODAL (SEU CÓDIGO ORIGINAL, ADAPTADO)
+    // Função para mostrar o modal
     const showProductModal = async (productId) => {
         modal.classList.add('show');
         modalLoader.style.display = 'flex';
         modalBody.innerHTML = '';
 
-        // Procura o produto no array 'allProducts' que foi carregado do Firebase
         const product = allProducts.find(p => p.id === productId);
         if (!product) {
             modalBody.innerHTML = '<p>Erro: produto não encontrado.</p>';
@@ -143,8 +138,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         modalBody.innerHTML = `
-            <img src="${imageUrl}" alt="${product.nome}" class="modal-product-image">
-            <h2 class="modal-product-title">${product.nome || 'Serviço sem nome'}</h2>
+            <img src="${imageUrl}" alt="Eu vou ${product.nome}" class="modal-product-image">
+            <h2 class="modal-product-title">Eu vou ${product.nome || '...'}</h2>
             <p class="modal-product-price">${precoFormatado}</p>
             <p class="modal-product-description">${product.descricao || 'Nenhuma descrição fornecida.'}</p>
             ${sellerHtml}
@@ -152,16 +147,16 @@ document.addEventListener('DOMContentLoaded', () => {
         modalLoader.style.display = 'none';
     };
 
-    // Funções para fechar o modal (seu código original, mantido)
+    // Funções para fechar o modal
     const closeProductModal = () => modal.classList.remove('show');
     modalCloseBtn.addEventListener('click', closeProductModal);
     modal.addEventListener('click', (event) => {
         if (event.target === modal) closeProductModal();
     });
 
-    // ✅ NOVA FUNÇÃO PARA RENDERIZAR OS CARDS NA TELA
+    // Função para renderizar os cards na tela
     const renderProducts = (productsToRender) => {
-        productGrid.innerHTML = ''; // Limpa a grade antes de adicionar novos cards
+        productGrid.innerHTML = '';
 
         if (productsToRender.length === 0) {
             productGrid.innerHTML = "<p>Nenhum serviço encontrado. Clique em 'Novo Serviço' para cadastrar o primeiro!</p>";
@@ -173,25 +168,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const precoFormatado = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.preco);
             const card = document.createElement('div');
             card.classList.add('product-card');
-            
-            // O ID do documento do Firebase é usado para identificar o card
             card.setAttribute('data-id', product.id);
 
             let ratingHtml = (product.avaliacao && product.avaliacao > 0) ?
                 `<div class="product-rating"><i class="fas fa-star filled"></i><span>${product.avaliacao.toFixed(1)}</span></div>` :
                 '<div class="product-rating-none">Sem avaliação</div>';
 
-            // CORREÇÃO: Usando 'product.nome' para o título e 'product.descricao' para o parágrafo
             card.innerHTML = `
                 <div class="product-image-container">
-                    <img src="${imageUrl}" alt="${product.nome}" class="product-image">
+                    <img src="${imageUrl}" alt="Eu vou ${product.nome}" class="product-image">
                     <div class="product-price">${precoFormatado}</div>
                 </div>
                 <div class="product-info">
                     <div class="product-seller">
                         <span>${product.vendedor || 'Vendedor não informado'}</span>
                     </div>
-                    <h4 class="product-title">${product.nome}</h4>
+                    <h4 class="product-title">Eu vou ${product.nome}</h4>
                     <p class="product-description-card">${product.descricao.substring(0, 100)}...</p>
                     <div class="product-meta">${ratingHtml}</div>
                 </div>`;
@@ -201,33 +193,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // ✅ NOVA FUNÇÃO PRINCIPAL QUE CARREGA OS PRODUTOS DO FIRESTORE
+    // Função principal que carrega os produtos do Firestore
     const loadProductsFromFirestore = async () => {
-        loader.style.display = 'flex'; // Mostra o loader
+        loader.style.display = 'flex';
         productGrid.innerHTML = '';
 
         try {
-            // Busca os produtos na coleção 'produtos', ordenando pelos mais recentes
             const snapshot = await db.collection('produtos').orderBy('criadoEm', 'desc').get();
 
             if (snapshot.empty) {
-                renderProducts([]); // Chama renderProducts com array vazio para mostrar a mensagem
+                renderProducts([]);
             } else {
-                // Mapeia os resultados para o formato que a aplicação espera
                 allProducts = snapshot.docs.map(doc => ({
-                    id: doc.id,         // Pega o ID único do documento
-                    ...doc.data()       // Pega todos os campos do documento
+                    id: doc.id,
+                    ...doc.data()
                 }));
-                renderProducts(allProducts); // Renderiza os produtos na tela
+                renderProducts(allProducts);
             }
         } catch (error) {
             console.error("Erro ao carregar produtos do Firestore: ", error);
             productGrid.innerHTML = "<p>Ocorreu um erro ao carregar os serviços. Tente recarregar a página.</p>";
         } finally {
-            loader.style.display = 'none'; // Esconde o loader no final
+            loader.style.display = 'none';
         }
     };
 
-    // ✅ CHAMADA DA NOVA FUNÇÃO AO CARREGAR A PÁGINA
+    // Chamada da função ao carregar a página
     loadProductsFromFirestore();
 });
