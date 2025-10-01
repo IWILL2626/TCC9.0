@@ -17,11 +17,13 @@ const db = firebase.firestore();
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    // Seletores de elementos
     const productGrid = document.getElementById('productGrid');
     const loader = document.getElementById('loader');
     const editModal = document.getElementById('editModal');
     const modalCloseBtn = document.getElementById('modalCloseBtn');
     const editForm = document.getElementById('editForm');
+    const searchInput = document.getElementById('myServicesSearchInput');
 
     let currentUser = null;
     let userProducts = [];
@@ -63,6 +65,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Função para renderizar os cards
     const renderProducts = (products) => {
         productGrid.innerHTML = '';
+        if (products.length === 0) {
+            productGrid.innerHTML = "<p>Nenhum serviço encontrado com o termo pesquisado.</p>";
+            return;
+        }
         products.forEach(product => {
             const card = document.createElement('div');
             card.classList.add('product-card');
@@ -83,6 +89,20 @@ document.addEventListener('DOMContentLoaded', () => {
             card.querySelector('.btn-delete').addEventListener('click', () => deleteProduct(product.id));
             productGrid.appendChild(card);
         });
+    };
+    
+    // Função para aplicar o filtro de pesquisa
+    const applySearch = () => {
+        const searchTerm = searchInput.value.toLowerCase();
+        if (!searchTerm) {
+            renderProducts(userProducts);
+            return;
+        }
+        const filteredProducts = userProducts.filter(product => 
+            product.nome.toLowerCase().includes(searchTerm) ||
+            product.descricao.toLowerCase().includes(searchTerm)
+        );
+        renderProducts(filteredProducts);
     };
 
     // Funções do Modal de Edição
@@ -105,14 +125,12 @@ document.addEventListener('DOMContentLoaded', () => {
         event.preventDefault();
         const productId = document.getElementById('editProductId').value;
         toggleLoading(true);
-
         const updatedData = {
             nome: document.getElementById('editProductName').value,
             preco: parseFloat(document.getElementById('editPrice').value),
             prazo: document.getElementById('editDeliveryTime').value,
             descricao: document.getElementById('editDescription').value,
         };
-
         try {
             await db.collection('produtos').doc(productId).update(updatedData);
             closeEditModal();
@@ -143,4 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
             toggleLoading(false);
         }
     };
+    
+    // Adiciona o Event Listener para a barra de pesquisa
+    searchInput.addEventListener('input', applySearch);
 });

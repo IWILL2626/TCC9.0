@@ -15,15 +15,11 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// --- SEÇÃO DE AUTENTICAÇÃO E LOGOUT ---
-
 const logout = () => {
     auth.signOut().then(() => {
         window.location.href = "index.html";
     });
 };
-
-// --- CÓDIGO EXECUTADO APÓS O CARREGAMENTO DA PÁGINA ---
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -38,22 +34,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalBody = document.getElementById('modalBody');
     const modalLoader = document.getElementById('modalLoader');
     const modalCloseBtn = document.getElementById('modalCloseBtn');
-    
-    // Botões de Logout
     const logoutBtnNav = document.getElementById("logoutBtnNav");
     const logoutBtnMobile = document.getElementById("logoutBtnMobile");
-    
-    // --- LÓGICA DE LOGOUT ---
+
+    // --- SELETORES PARA OS FILTROS ---
+    const searchInput = document.getElementById('searchInput');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const ratingFilter = document.getElementById('ratingFilter');
+
+    // --- LÓGICA DE LOGOUT E AUTENTICAÇÃO ---
     if (logoutBtnNav) logoutBtnNav.addEventListener("click", logout);
     if (logoutBtnMobile) logoutBtnMobile.addEventListener("click", logout);
+    auth.onAuthStateChanged((user) => { if (!user) window.location.href = "login.html"; });
 
-    // --- VERIFICAÇÃO DE AUTENTICAÇÃO ---
-    auth.onAuthStateChanged((user) => {
-        if (!user) {
-            window.location.href = "login.html";
-        }
-    });
-    
     // --- LÓGICA DOS MENUS (CÓDIGO ORIGINAL MANTIDO) ---
     if (settingsBtn && settingsDropdown) {
         settingsBtn.addEventListener('click', (event) => {
@@ -90,11 +83,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- SEÇÃO DE CARREGAMENTO DE PRODUTOS E LÓGICA DO MODAL ---
+    // --- SEÇÃO DE LÓGICA DOS PRODUTOS ---
     
-    let allProducts = []; // Armazena todos os produtos carregados do Firebase
+    let allProducts = [];
 
-    // Função para buscar dados do vendedor
     const getSellerData = async (sellerId) => {
         if (!sellerId) return null;
         try {
@@ -106,23 +98,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Função para mostrar o modal
     const showProductModal = async (productId) => {
         modal.classList.add('show');
         modalLoader.style.display = 'flex';
         modalBody.innerHTML = '';
-
         const product = allProducts.find(p => p.id === productId);
         if (!product) {
             modalBody.innerHTML = '<p>Erro: produto não encontrado.</p>';
             modalLoader.style.display = 'none';
             return;
         }
-
         const seller = await getSellerData(product.vendedorId);
         const imageUrl = product.imagem || 'https://via.placeholder.com/400x250?text=Sem+Imagem';
         const precoFormatado = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.preco);
-
         let sellerHtml;
         if (seller) {
             sellerHtml = `
@@ -136,7 +124,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             sellerHtml = `<div class="modal-seller-info"><p>Informações do vendedor não disponíveis.</p></div>`;
         }
-        
         modalBody.innerHTML = `
             <img src="${imageUrl}" alt="Eu vou ${product.nome}" class="modal-product-image">
             <h2 class="modal-product-title">Eu vou ${product.nome || '...'}</h2>
@@ -147,33 +134,60 @@ document.addEventListener('DOMContentLoaded', () => {
         modalLoader.style.display = 'none';
     };
 
-    // Funções para fechar o modal
     const closeProductModal = () => modal.classList.remove('show');
     modalCloseBtn.addEventListener('click', closeProductModal);
-    modal.addEventListener('click', (event) => {
-        if (event.target === modal) closeProductModal();
-    });
+    modal.addEventListener('click', (event) => { if (event.target === modal) closeProductModal(); });
 
-    // Função para renderizar os cards na tela
+    const applyFilters = () => {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedCategory = categoryFilter.value;
+        const minRating = parseFloat(ratingFilter.value);
+        let filteredProducts = [...allProducts];
+        if (searchTerm) {
+            filteredProducts = filteredProducts.filter(product => 
+                product.nome.toLowerCase().includes(searchTerm) ||
+                product.descricao.toLowerCase().includes(searchTerm) ||
+                product.vendedor.toLowerCase().includes(searchTerm)
+            );
+        }
+        if (selectedCategory) {
+            filteredProducts = filteredProducts.filter(product => product.categoria === selectedCategory);
+        }
+        if (minRating) {
+            filteredProducts = filteredProducts.filter(product => product.avaliacao >= minRating);
+        }
+        renderProducts(filteredProducts);
+    };
+
+    const populateCategoryFilter = (products) => {
+        const categories = [...new Set(products.map(p => p.categoria))];
+        categories.sort();
+        categoryFilter.innerHTML = '<option value="">Todas as categorias</option>';
+        categories.forEach(category => {
+            if (category) {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+                categoryFilter.appendChild(option);
+            }
+        });
+    };
+
     const renderProducts = (productsToRender) => {
         productGrid.innerHTML = '';
-
         if (productsToRender.length === 0) {
-            productGrid.innerHTML = "<p>Nenhum serviço encontrado. Clique em 'Novo Serviço' para cadastrar o primeiro!</p>";
+            productGrid.innerHTML = "<p>Nenhum serviço encontrado com os filtros aplicados.</p>";
             return;
         }
-
         productsToRender.forEach((product) => {
             const imageUrl = product.imagem || 'https://via.placeholder.com/400x250?text=Sem+Imagem';
             const precoFormatado = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.preco);
             const card = document.createElement('div');
             card.classList.add('product-card');
             card.setAttribute('data-id', product.id);
-
             let ratingHtml = (product.avaliacao && product.avaliacao > 0) ?
                 `<div class="product-rating"><i class="fas fa-star filled"></i><span>${product.avaliacao.toFixed(1)}</span></div>` :
                 '<div class="product-rating-none">Sem avaliação</div>';
-
             card.innerHTML = `
                 <div class="product-image-container">
                     <img src="${imageUrl}" alt="Eu vou ${product.nome}" class="product-image">
@@ -187,27 +201,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p class="product-description-card">${product.descricao.substring(0, 100)}...</p>
                     <div class="product-meta">${ratingHtml}</div>
                 </div>`;
-            
             card.addEventListener('click', () => showProductModal(product.id));
             productGrid.appendChild(card);
         });
     };
 
-    // Função principal que carrega os produtos do Firestore
     const loadProductsFromFirestore = async () => {
         loader.style.display = 'flex';
         productGrid.innerHTML = '';
-
         try {
             const snapshot = await db.collection('produtos').orderBy('criadoEm', 'desc').get();
-
             if (snapshot.empty) {
                 renderProducts([]);
             } else {
-                allProducts = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
+                allProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                populateCategoryFilter(allProducts);
                 renderProducts(allProducts);
             }
         } catch (error) {
@@ -217,7 +225,10 @@ document.addEventListener('DOMContentLoaded', () => {
             loader.style.display = 'none';
         }
     };
+    
+    searchInput.addEventListener('input', applyFilters);
+    categoryFilter.addEventListener('change', applyFilters);
+    ratingFilter.addEventListener('change', applyFilters);
 
-    // Chamada da função ao carregar a página
     loadProductsFromFirestore();
 });
