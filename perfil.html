@@ -3,54 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meu Perfil | I Will</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <title>I Will - Meu Perfil</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/perfil.css">
-    <link rel="stylesheet" href="css/dark-mode.css"> </head>
+    <link rel="stylesheet" href="css/dark-mode.css">
+</head>
 <body>
-    <div class="profile-container">
-        <div class="profile-header">
-            <img src="img/avatar.png" alt="Foto do perfil" class="profile-pic" id="profilePic">
-            <h1 id="userName">Carregando...</h1>
-            <p class="user-email" id="userEmail">carregando@email.com</p>
+    <header>
+        <div class="logo">
+            <img src="img/icon.png" alt="Ícone I Will" class="logo-to-toggle">
+            <span>I Will</span>
         </div>
-
-        <div class="profile-details">
-            <div class="detail-card">
-                <i class="fas fa-phone"></i>
-                <div>
-                    <h3>Telefone</h3>
-                    <p id="userPhone">(00) 00000-0000</p>
-                </div>
-            </div>
-
-            <div class="detail-card">
-                <i class="fas fa-users"></i>
-                <div>
-                    <h3>Turma</h3>
-                    <p id="userClass">Carregando...</p>
-                </div>
-            </div>
-
-            <div class="detail-card">
-                <i class="fas fa-envelope"></i>
-                <div>
-                    <h3>E-mail</h3>
-                    <p id="userEmail2">carregando@email.com</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="profile-actions">
-            <button class="btn-action btn-edit" id="editProfileBtn">
-                <i class="fas fa-pencil-alt"></i> Editar Perfil
+        <nav>
+            <button class="btn btn-secondary" onclick="window.location.href='vendas.html'">
+                <i class="fas fa-arrow-left"></i> Voltar para Vendas
             </button>
-            <button class="btn-action btn-back" onclick="window.location.href='vendas.html'">
-                <i class="fas fa-arrow-left"></i> Voltar
-            </button>
+        </nav>
+    </header>
+
+    <main>
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="profile-image-container">
+                    <img id="profileImage" src="img/avatar.png" alt="Foto de Perfil" class="profile-image">
+                    <label for="newProfileImageInput" class="edit-profile-image">
+                        <i class="fas fa-camera"></i>
+                    </label>
+                    <input type="file" id="newProfileImageInput" accept="image/*" style="display: none;">
+                </div>
+                <h2 id="profileName">Carregando...</h2>
+                <p id="profileCourse">Carregando...</p>
+            </div>
+            <div class="profile-details">
+                <h3>Informações de Contato</h3>
+                <div class="detail-item">
+                    <i class="fas fa-user-circle"></i>
+                    <span id="profileUsername">Carregando...</span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-envelope"></i>
+                    <span id="profileEmail">Carregando...</span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-phone"></i>
+                    <span id="profilePhone">Carregando...</span>
+                </div>
+            </div>
+            <div class="profile-actions">
+                <button class="btn-action btn-edit" id="editProfileBtn">
+                    <i class="fas fa-pencil-alt"></i> Editar Perfil
+                </button>
+            </div>
         </div>
-    </div>
+    </main>
 
     <div id="editModal" class="modal-overlay">
         <div class="modal-content">
@@ -66,25 +72,29 @@
                     <input type="tel" id="editPhone" placeholder="(00) 00000-0000">
                 </div>
                 <div class="input-group">
-                    <label for="editClass">Turma</label>
-                    <input type="text" id="editClass" placeholder="Sua turma ou curso">
+                    <label for="editCourse">Turma</label>
+                    <input type="text" id="editCourse" placeholder="Sua turma ou curso">
                 </div>
                 <div class="modal-actions">
                     <button class="btn-action btn-save" id="saveChangesBtn">
-                        <i class="fas fa-save"></i> Salvar
-                    </button>
-                    <button class="btn-action btn-cancel" id="cancelBtn">
-                        Cancelar
+                        <i class="fas fa-save"></i> Salvar Alterações
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
+    <div id="toast-container"></div>
+    <div id="loading" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+    
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-
+    
+    <script src="javascript/utils.js"></script>
+    <script src="javascript/dark-mode-global.js"></script>
     <script src="javascript/perfil.js"></script>
-    <script src="javascript/dark-mode-global.js"></script> </body>
+</body>
 </html>

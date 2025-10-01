@@ -73,7 +73,7 @@ header nav .btn:hover {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 80px 20px 20px;
+    padding: 100px 20px 20px;
 }
 
 .register-card {
@@ -122,10 +122,6 @@ header nav .btn:hover {
 @media (min-width: 600px) {
     .form-grid {
         grid-template-columns: 1fr 1fr;
-    }
-
-    .input-group.full-width {
-        grid-column: 1 / -1;
     }
 }
 
@@ -270,8 +266,52 @@ footer {
     margin-top: auto;
 }
 
-/* Animations */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+/* ✅ ESTILOS PARA UPLOAD DE IMAGEM DE PERFIL ADICIONADOS AQUI */
+.profile-image-uploader {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.profile-image-uploader label {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.profile-image-preview {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--white);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.profile-image-uploader label:hover .profile-image-preview {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.edit-icon {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background-color: var(--primary-color);
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    border: 2px solid var(--white);
+    transition: all 0.3s ease;
+}
+
+.profile-image-uploader p {
+    margin-top: 0.5rem;
+    font-weight: 500;
+    color: #666;
 }

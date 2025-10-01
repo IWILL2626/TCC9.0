@@ -1,3 +1,5 @@
+// javascript/perfil.js
+
 // Configuração do Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyAKTwMCe5sUPoZz5jwSYV1WiNmGjGxNxY8",
@@ -13,121 +15,139 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// Quando a página carregar
 document.addEventListener('DOMContentLoaded', () => {
-    // ======================================================
-    // ELEMENTOS DO DOM PARA O MODAL (ADICIONADOS)
-    // ======================================================
+
+    // --- ELEMENTOS DO PERFIL (PÁGINA PRINCIPAL) ---
+    const profileImage = document.getElementById('profileImage');
+    const newProfileImageInput = document.getElementById('newProfileImageInput');
+    const profileName = document.getElementById('profileName');
+    const profileCourse = document.getElementById('profileCourse');
+    const profileUsername = document.getElementById('profileUsername');
+    const profileEmail = document.getElementById('profileEmail');
+    const profilePhone = document.getElementById('profilePhone');
+
+    // --- ELEMENTOS DO MODAL DE EDIÇÃO ---
     const editModal = document.getElementById('editModal');
     const editProfileBtn = document.getElementById('editProfileBtn');
     const modalCloseBtn = document.getElementById('modalCloseBtn');
-    const cancelBtn = document.getElementById('cancelBtn');
     const saveChangesBtn = document.getElementById('saveChangesBtn');
-
-    // Inputs do formulário de edição
     const editNameInput = document.getElementById('editName');
     const editPhoneInput = document.getElementById('editPhone');
-    const editClassInput = document.getElementById('editClass');
+    const editCourseInput = document.getElementById('editCourse');
 
-    // ======================================================
-    // FUNÇÕES PARA CONTROLAR O MODAL (ADICIONADAS)
-    // ======================================================
-    const openModal = () => editModal.classList.add('show');
-    const closeModal = () => editModal.classList.remove('show');
+    let currentUser = null;
 
-    // Adiciona os listeners para abrir e fechar o modal
-    editProfileBtn.addEventListener('click', openModal);
-    modalCloseBtn.addEventListener('click', closeModal);
-    cancelBtn.addEventListener('click', closeModal);
-    // Fecha o modal se clicar fora dele
-    editModal.addEventListener('click', (event) => {
-        if (event.target === editModal) {
-            closeModal();
-        }
-    });
-
-    // Função principal que carrega os dados do perfil
+    // --- CONTROLE DE AUTENTICAÇÃO E CARREGAMENTO INICIAL ---
     auth.onAuthStateChanged(async (user) => {
         if (user) {
-            // Usuário está logado
-            console.log("Usuário logado:", user.uid);
-            
-            try {
-                const userDoc = await db.collection("vendedores").doc(user.uid).get();
-                
-                if (userDoc.exists) {
-                    const userData = userDoc.data();
-                    console.log("Dados do usuário:", userData);
-                    
-                    // Preenche os dados na PÁGINA PRINCIPAL
-                    document.getElementById('userName').textContent = userData.nome || "Não informado";
-                    document.getElementById('userEmail').textContent = user.email;
-                    document.getElementById('userEmail2').textContent = user.email;
-                    document.getElementById('userPhone').textContent = userData.telefone || "Não informado";
-                    document.getElementById('userClass').textContent = userData.turma || "Não informada";
-                    
-                    // Preenche os dados no FORMULÁRIO DO MODAL
-                    editNameInput.value = userData.nome || "";
-                    editPhoneInput.value = userData.telefone || "";
-                    editClassInput.value = userData.turma || "";
-
-                    if (userData.fotoPerfil) {
-                        document.getElementById('profilePic').src = userData.fotoPerfil;
-                    }
-                } else {
-                    console.log("Nenhum dado adicional encontrado!");
-                    // Ainda assim, preenche o email que já temos
-                    document.getElementById('userEmail').textContent = user.email;
-                    document.getElementById('userEmail2').textContent = user.email;
-                }
-            } catch (error) {
-                console.error("Erro ao buscar dados:", error);
-                alert("Erro ao carregar perfil. Tente novamente mais tarde.");
-            }
+            currentUser = user;
+            loadUserProfile(user.uid);
         } else {
-            // Usuário não está logado, redireciona
-            alert("Você precisa estar logado para acessar esta página!");
-            window.location.href = "login.html";
+            window.location.href = 'login.html';
         }
     });
 
-    // ======================================================
-    // FUNÇÃO PARA SALVAR AS ALTERAÇÕES (ADICIONADA)
-    // ======================================================
-    saveChangesBtn.addEventListener('click', async () => {
-        const user = auth.currentUser;
-        if (!user) {
-            alert("Sua sessão expirou. Faça login novamente.");
-            return;
+    // --- FUNÇÕES PRINCIPAIS ---
+
+    // Carrega todos os dados do perfil (foto e texto)
+    const loadUserProfile = async (uid) => {
+        try {
+            const userDoc = await db.collection('vendedores').doc(uid).get();
+            if (userDoc.exists) {
+                const userData = userDoc.data();
+                
+                // Preenche os dados na página principal
+                profileImage.src = userData.imagemPerfil || 'img/avatar.png';
+                profileName.textContent = userData.nome || 'Não informado';
+                profileCourse.textContent = userData.turma || 'Não informada';
+                profileUsername.textContent = userData.username || 'Não informado';
+                profileEmail.textContent = userData.email || 'Não informado';
+                profilePhone.textContent = userData.telefone || 'Não informado';
+
+                // Preenche os dados no formulário do modal para edição
+                editNameInput.value = userData.nome || "";
+                editPhoneInput.value = userData.telefone || "";
+                editCourseInput.value = userData.turma || "";
+            } else {
+                console.log('Documento do usuário não encontrado!');
+            }
+        } catch (error) {
+            console.error("Erro ao carregar perfil:", error);
+            showToast("Erro ao carregar seu perfil.", "error");
         }
+    };
 
-        // Pega os novos valores dos inputs
-        const newName = editNameInput.value.trim();
-        const newPhone = editPhoneInput.value.trim();
-        const newClass = editClassInput.value.trim();
+    // Converte uma imagem para o formato Base64
+    function convertImageToBase64(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = error => reject(error);
+        });
+    }
 
-        // Cria um objeto com os dados a serem atualizados
+    // --- CONTROLES DO MODAL DE EDIÇÃO DE TEXTO ---
+    const openEditModal = () => editModal.classList.add('show');
+    const closeEditModal = () => editModal.classList.remove('show');
+
+    editProfileBtn.addEventListener('click', openEditModal);
+    modalCloseBtn.addEventListener('click', closeEditModal);
+    editModal.addEventListener('click', (event) => {
+        if (event.target === editModal) closeEditModal();
+    });
+
+    // --- EVENT LISTENERS PARA AS AÇÕES ---
+
+    // 1. Atualizar a FOTO de perfil
+    newProfileImageInput.addEventListener('change', async (event) => {
+        if (!currentUser) return;
+        const file = event.target.files[0];
+        if (!file) return;
+
+        toggleLoading(true);
+        try {
+            const imageBase64 = await convertImageToBase64(file);
+            profileImage.src = imageBase64; // Atualiza na tela
+            await db.collection('vendedores').doc(currentUser.uid).update({
+                imagemPerfil: imageBase64 // Salva no Firebase
+            });
+            showToast('Foto de perfil atualizada!', 'success');
+        } catch (error) {
+            console.error("Erro ao atualizar foto:", error);
+            showToast('Não foi possível atualizar a foto.', 'error');
+            loadUserProfile(currentUser.uid); // Recarrega para voltar à foto antiga
+        } finally {
+            toggleLoading(false);
+        }
+    });
+
+    // 2. Salvar as alterações de TEXTO do perfil
+    saveChangesBtn.addEventListener('click', async () => {
+        if (!currentUser) return;
+        
         const dataToUpdate = {
-            nome: newName,
-            telefone: newPhone,
-            turma: newClass
+            nome: editNameInput.value.trim(),
+            telefone: editPhoneInput.value.trim(),
+            turma: editCourseInput.value.trim()
         };
 
+        toggleLoading(true);
         try {
-            // Atualiza o documento no Firestore
-            await db.collection("vendedores").doc(user.uid).update(dataToUpdate);
-
-            // Atualiza os dados na página em tempo real
-            document.getElementById('userName').textContent = newName;
-            document.getElementById('userPhone').textContent = newPhone;
-            document.getElementById('userClass').textContent = newClass;
+            await db.collection("vendedores").doc(currentUser.uid).update(dataToUpdate);
             
-            alert("Perfil atualizado com sucesso!");
-            closeModal(); // Fecha o modal após salvar
-
+            // Atualiza os dados na página em tempo real
+            profileName.textContent = dataToUpdate.nome;
+            profilePhone.textContent = dataToUpdate.telefone;
+            profileCourse.textContent = dataToUpdate.turma;
+            
+            showToast("Perfil atualizado com sucesso!", "success");
+            closeEditModal();
         } catch (error) {
             console.error("Erro ao atualizar o perfil:", error);
-            alert("Ocorreu um erro ao salvar as alterações. Tente novamente.");
+            showToast("Ocorreu um erro ao salvar.", "error");
+        } finally {
+            toggleLoading(false);
         }
     });
 });

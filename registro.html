@@ -14,7 +14,8 @@
 <body>
     <header>
         <div class="logo">
-            <img src="img/icon.png" alt="Ícone I Will" class="logo-to-toggle">        </div>
+            <img src="img/icon.png" alt="Ícone I Will" class="logo-to-toggle">
+        </div>
         <nav>
             <button class="btn" onclick="window.location.href='index.html'">Voltar</button>
         </nav>
@@ -30,6 +31,16 @@
                 </div>
                 
                 <form id="registerForm" class="register-form">
+                    
+                    <div class="profile-image-uploader">
+                        <label for="profileImageInput">
+                            <img id="imagePreview" src="img/avatar.png" alt="Pré-visualização do perfil" class="profile-image-preview">
+                            <span class="edit-icon"><i class="fas fa-camera"></i></span>
+                        </label>
+                        <input type="file" id="profileImageInput" accept="image/*" style="display: none;">
+                        <p>Foto de Perfil (Opcional)</p>
+                    </div>
+
                     <div class="form-grid">
                         <div class="input-group">
                             <label for="nome">
@@ -139,7 +150,7 @@
     
     <script src="javascript/dark-mode-global.js"></script>    
     <script>
-        // Configuração do Firebase (suas credenciais)
+        // Configuração do Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAKTwMCe5sUPoZz5jwSYV1WiNmGjGxNxY8",
             authDomain: "tcciwill.firebaseapp.com",
@@ -169,7 +180,6 @@
             button.addEventListener('click', function() {
                 const input = this.parentElement.querySelector('input');
                 const icon = this.querySelector('i');
-                
                 if (input.type === 'password') {
                     input.type = 'text';
                     icon.classList.replace('fa-eye', 'fa-eye-slash');
@@ -178,6 +188,23 @@
                     icon.classList.replace('fa-eye-slash', 'fa-eye');
                 }
             });
+        });
+        
+        // ✅ LÓGICA DA IMAGEM DE PERFIL
+        const profileImageInput = document.getElementById('profileImageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        let profileImageBase64 = ""; // Variável para armazenar a imagem
+
+        profileImageInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    imagePreview.src = e.target.result;
+                    profileImageBase64 = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
         });
 
         // Validação do formulário
@@ -215,10 +242,9 @@
             if (isValid) {
                 try {
                     const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                    
                     await userCredential.user.sendEmailVerification();
                     
-                    // Salvar dados no Firestore, incluindo o status dos termos
+                    // ✅ SALVA OS DADOS NO FIRESTORE COM A IMAGEM
                     await db.collection("vendedores").doc(userCredential.user.uid).set({
                         nome,
                         username,
@@ -226,35 +252,25 @@
                         turma,
                         email,
                         createdAt: new Date(),
-                        emailVerified: false, // Correto: começa como falso
-                        termsAccepted: false // NOVO: Define o estado inicial dos termos
+                        emailVerified: false,
+                        termsAccepted: false,
+                        imagemPerfil: profileImageBase64 || "" // Salva a imagem ou uma string vazia
                     });
                     
-                    // Mostrar mensagem de verificação e redirecionar
                     document.getElementById('registerForm').style.display = 'none';
                     document.getElementById('emailVerification').style.display = 'block';
-
-                    // Redireciona para a página de termos após um breve momento
                     setTimeout(() => {
                         window.location.href = 'termos.html';
-                    }, 3000); // Espera 3 segundos antes de redirecionar
+                    }, 3000);
                     
                 } catch (error) {
                     const errorMessage = document.getElementById('firebaseError');
                     errorMessage.style.display = 'block';
-                    
                     switch (error.code) {
-                        case 'auth/email-already-in-use':
-                            errorMessage.textContent = 'Este e-mail já está em uso.';
-                            break;
-                        case 'auth/weak-password':
-                            errorMessage.textContent = 'A senha deve ter pelo menos 6 caracteres.';
-                            break;
-                        case 'auth/invalid-email':
-                            errorMessage.textContent = 'E-mail inválido.';
-                            break;
-                        default:
-                            errorMessage.textContent = 'Ocorreu um erro. Tente novamente.';
+                        case 'auth/email-already-in-use': errorMessage.textContent = 'Este e-mail já está em uso.'; break;
+                        case 'auth/weak-password': errorMessage.textContent = 'A senha deve ter pelo menos 6 caracteres.'; break;
+                        case 'auth/invalid-email': errorMessage.textContent = 'E-mail inválido.'; break;
+                        default: errorMessage.textContent = 'Ocorreu um erro. Tente novamente.';
                     }
                 }
             }
