@@ -1,124 +1,147 @@
-/* css/perfil.css */
-@import url('vendas.css'); /* Reaproveita estilos base */
-
-main {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 120px 5% 4rem;
-    min-height: 100vh;
+:root {
+    --primary-color: #a00;
+    --primary-dark: #800;
+    --primary-light: #ffebee;
+    --text-color: #333;
+    --light-gray: #f5f5f5;
+    --white: #fff;
+    --shadow: 0 5px 20px rgba(0,0,0,0.1);
+    --transition: all 0.3s ease;
+    /* Variáveis padronizadas para o tema */
+    --background-color: #f5f5f5;
+    --surface-color: #fff;
+    --border-color: #eee; /* Adicionado para consistência */
 }
 
-.profile-card {
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.profile-container {
+    background: var(--surface-color);
+    border-radius: 15px;
+    box-shadow: var(--shadow);
     width: 100%;
     max-width: 500px;
-    background-color: var(--surface-color);
-    border-radius: 16px;
-    box-shadow: var(--shadow);
-    overflow: hidden;
-    animation: fadeInUp 0.5s ease-out;
+    padding: 30px;
+    margin-top: 30px;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .profile-header {
-    background-color: var(--primary-light);
-    padding: 2rem;
     text-align: center;
+    margin-bottom: 30px;
+}
+
+/* ✅ ESTILOS PARA UPLOAD DA FOTO DE PERFIL */
+.profile-pic-container {
     position: relative;
-    border-bottom: 1px solid var(--border-color);
+    display: inline-block;
+    cursor: pointer;
 }
-
-body.dark-mode .profile-header {
-    background-color: var(--dark-gray);
-}
-
-.profile-image-container {
-    position: relative;
-    width: 140px;
-    height: 140px;
-    margin: 0 auto 1rem;
-}
-
-.profile-image {
-    width: 100%;
-    height: 100%;
+.profile-pic {
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
     object-fit: cover;
-    border: 5px solid var(--surface-color);
+    border: 5px solid var(--primary-light);
+    margin-bottom: 15px;
+    transition: filter 0.3s ease;
 }
-
-.edit-profile-image {
+.profile-pic-edit-overlay {
     position: absolute;
-    bottom: 5px;
-    right: 5px;
-    width: 35px;
-    height: 35px;
-    background-color: var(--primary-color);
-    color: white;
+    top: 0;
+    left: 0;
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
+    background-color: rgba(0,0,0,0.4);
+    color: white;
     display: flex;
-    align-items: center;
     justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    border: 2px solid var(--surface-color);
+    align-items: center;
+    font-size: 1.5rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.profile-pic-container:hover .profile-pic-edit-overlay {
+    opacity: 1;
+}
+.profile-pic-container:hover .profile-pic {
+    filter: brightness(0.8);
 }
 
-.edit-profile-image:hover {
-    transform: scale(1.1);
+
+.profile-header h1 {
+    color: var(--primary-color);
+    margin: 10px 0 5px;
 }
 
-.profile-header h2 {
-    font-size: 1.8rem;
-    font-weight: 600;
-    color: var(--text-color);
-    margin-bottom: 0.2rem;
-}
-
-.profile-header p {
-    font-size: 1rem;
-    color: var(--text-light);
+.user-email {
+    color: #666;
+    margin: 0;
 }
 
 .profile-details {
-    padding: 2rem;
+    margin: 30px 0;
 }
 
-.profile-details h3 {
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 0.8rem;
-}
-
-.detail-item {
+.detail-card {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
+    padding: 15px;
+    margin-bottom: 15px;
+    background: var(--light-gray);
+    border-radius: 10px;
+    transition: var(--transition);
 }
 
-.detail-item i {
-    font-size: 1.2rem;
+.detail-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.detail-card i {
+    font-size: 24px;
     color: var(--primary-color);
-    width: 25px;
+    margin-right: 15px;
+    width: 30px;
     text-align: center;
 }
 
-.detail-item span {
-    font-size: 1rem;
+.detail-card h3 {
+    margin: 0 0 5px;
+    font-size: 16px;
+    color: #555;
+}
+
+.detail-card p {
+    margin: 0;
+    font-weight: 500;
     color: var(--text-color);
 }
 
 .profile-actions {
-    padding: 0 2rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
 }
 
 .btn-action {
     border: none;
     padding: 12px 25px;
     border-radius: 50px;
-    font-size: 1rem;
+    font-size: 16px;
     font-weight: 600;
     cursor: pointer;
     transition: var(--transition);
@@ -126,7 +149,6 @@ body.dark-mode .profile-header {
     justify-content: center;
     align-items: center;
     gap: 8px;
-    width: 100%;
 }
 
 .btn-edit {
@@ -140,9 +162,70 @@ body.dark-mode .profile-header {
     box-shadow: 0 5px 15px rgba(160,0,0,0.3);
 }
 
-/* Modal de Edição de Texto */
-#editModal .modal-body {
-    padding-top: 1rem;
+.btn-back {
+    background: var(--light-gray);
+    color: var(--text-color);
+}
+
+.btn-back:hover {
+    background: #ddd;
+}
+
+/* Modal de Edição (Seu layout original) */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: var(--transition);
+    z-index: 1000;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background-color: var(--surface-color);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: var(--shadow);
+    width: 90%;
+    max-width: 450px;
+    position: relative;
+    transform: scale(0.9);
+    transition: var(--transition);
+}
+
+.modal-overlay.show .modal-content {
+    transform: scale(1);
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: transparent;
+    border: none;
+    font-size: 2rem;
+    color: #aaa;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.modal-content h2 {
+    margin-top: 0;
+    margin-bottom: 25px;
+    color: var(--primary-color);
+    text-align: center;
 }
 
 .input-group {
@@ -153,18 +236,18 @@ body.dark-mode .profile-header {
     display: block;
     margin-bottom: 8px;
     font-weight: 500;
-    color: var(--text-light);
+    color: #555;
 }
 
 .input-group input {
     width: 100%;
     padding: 12px 15px;
-    border: 1px solid var(--border-color);
+    border: 1px solid #ddd;
     border-radius: 8px;
     font-size: 1rem;
     font-family: 'Poppins', sans-serif;
     transition: var(--transition);
-    background-color: var(--background-color);
+    background-color: var(--light-gray);
     color: var(--text-color);
 }
 
@@ -187,4 +270,40 @@ body.dark-mode .profile-header {
 }
 .btn-save:hover {
     background-color: var(--primary-dark);
+}
+
+.btn-cancel {
+    flex: 1;
+    background-color: var(--light-gray);
+    color: var(--text-color);
+}
+.btn-cancel:hover {
+    background-color: #ddd;
+}
+
+
+/* ✅ ESTILOS PARA O LOADING SPINNER GLOBAL (para corrigir o bug) */
+.loading-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.6);
+    display: none; /* Inicia oculto */
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+.loading-overlay.visible {
+    display: flex; /* Fica visível apenas quando a classe 'visible' é adicionada */
+}
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(255,255,255,0.3);
+    border-top-color: var(--white);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
 }
