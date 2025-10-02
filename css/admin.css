@@ -1,0 +1,191 @@
+/* css/admin.css */
+
+/* 1. Variáveis de Cor e Estilo (baseado no seu projeto) */
+:root {
+    --primary-color: #8A2BE2; /* Roxo principal do I Will */
+    --primary-hover: #7B1FA2;
+    --danger-color: #e74c3c; /* Vermelho para ações de exclusão */
+    --danger-hover: #c0392b;
+    --surface-color: #ffffff; /* Fundo de cards/tabelas */
+    --background-color: #f4f6f8; /* Fundo geral da página */
+    --text-color: #333333;
+    --border-color: #dddddd;
+    --header-bg-color: #ffffff;
+    --font-family: 'Poppins', sans-serif;
+}
+
+/* Estilos para o modo escuro (serão ativados pelo seu dark-mode.js) */
+body.dark-mode {
+    --surface-color: #2c2f33;
+    --background-color: #23272a;
+    --text-color: #ffffff;
+    --border-color: #4a4a4a;
+    --header-bg-color: #2c2f33;
+}
+
+/* 2. Estilos Gerais */
+body {
+    font-family: var(--font-family);
+    margin: 0;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* 3. Cabeçalho do Painel Admin */
+.admin-header {
+    background-color: var(--header-bg-color);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 1rem 5%;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.header-content h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+.header-content h1 .fa-shield-halved {
+    margin-right: 10px;
+}
+
+.nav-link, .btn-logout {
+    text-decoration: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 500;
+    margin-left: 1rem;
+    cursor: pointer;
+    border: none;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+}
+
+.nav-link {
+    background-color: transparent;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+}
+
+.nav-link:hover {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+.btn-logout {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+.btn-logout:hover {
+    background-color: var(--primary-hover);
+}
+
+/* 4. Conteúdo Principal e Tabela */
+.admin-container {
+    max-width: 1400px;
+    margin: 2rem auto;
+    padding: 0 5%;
+}
+
+.services-table-container {
+    background-color: var(--surface-color);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.services-table-container h2 {
+    margin-top: 0;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 0.5rem;
+    display: inline-block;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1.5rem;
+}
+
+thead {
+    background-color: var(--background-color);
+}
+
+th, td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+th {
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+tbody tr:hover {
+    background-color: var(--background-color);
+}
+
+/* 5. Estilo do Botão de Ação (Excluir) */
+.btn-delete {
+    background-color: var(--danger-color);
+    color: white;
+    border: none;
+    padding: 0.5rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+}
+
+.btn-delete:hover {
+    background-color: var(--danger-hover);
+}
+
+.btn-delete .fa-trash {
+    margin-right: 5px;
+}
+
+/* 6. Loader/Spinner */
+.loader {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 4rem;
+    text-align: center;
+    color: var(--text-color);
+}
+
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border-left-color: var(--primary-color);
+    animation: spin 1s ease infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
