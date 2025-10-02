@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('myServicesSearchInput');
 
     let currentUser = null;
-    let userProducts = [];
+    let userProducts = []; // Armazena todos os produtos do usuário para o filtro
 
     // Verifica a autenticação e inicia o carregamento dos produtos
     auth.onAuthStateChanged((user) => {
@@ -34,25 +34,30 @@ document.addEventListener('DOMContentLoaded', () => {
             currentUser = user;
             loadUserProducts();
         } else {
+            // Se não estiver logado, redireciona para a página de login
             window.location.href = "login.html";
         }
     });
 
-    // Função para carregar apenas os produtos do usuário logado
+    // FUNÇÃO PARA CARREGAR APENAS OS PRODUTOS DO USUÁRIO LOGADO
     const loadUserProducts = async () => {
         if (!currentUser) return;
+
         loader.style.display = 'flex';
         productGrid.innerHTML = '';
+
         try {
+            // A consulta filtra apenas os produtos do usuário logado
             const snapshot = await db.collection('produtos')
                                      .where("vendedorId", "==", currentUser.uid)
                                      .orderBy('criadoEm', 'desc')
                                      .get();
+
             if (snapshot.empty) {
                 productGrid.innerHTML = "<p>Você ainda não cadastrou nenhum serviço.</p>";
             } else {
                 userProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderProducts(userProducts);
+                renderProducts(userProducts); // Renderiza todos os produtos do usuário
             }
         } catch (error) {
             console.error("Erro ao carregar seus produtos: ", error);
@@ -62,9 +67,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Função para renderizar os cards
+    // FUNÇÃO PARA RENDERIZAR OS CARDS NA TELA (com botões de ação)
     const renderProducts = (products) => {
         productGrid.innerHTML = '';
+
+        if (products.length === 0) {
+            productGrid.innerHTML = "<p>Nenhum serviço encontrado com o termo pesquisado.</p>";
+            return;
+        }
+
+
         if (products.length === 0) {
             productGrid.innerHTML = "<p>Nenhum serviço encontrado com o termo pesquisado.</p>";
             return;
@@ -73,6 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.classList.add('product-card');
             card.setAttribute('data-id', product.id);
+
             card.innerHTML = `
                 <div class="product-image-container">
                     <img src="${product.imagem}" alt="Eu vou ${product.nome}" class="product-image">
@@ -85,11 +98,29 @@ document.addEventListener('DOMContentLoaded', () => {
                         <button class="action-btn btn-delete"><i class="fas fa-trash"></i> Excluir</button>
                     </div>
                 </div>`;
+            
+            // Adiciona os eventos aos botões de editar e excluir
             card.querySelector('.btn-edit').addEventListener('click', () => openEditModal(product));
             card.querySelector('.btn-delete').addEventListener('click', () => deleteProduct(product.id));
+
             productGrid.appendChild(card);
         });
     };
+    
+    // FUNÇÃO PARA APLICAR O FILTRO DE PESQUISA
+    const applySearch = () => {
+        const searchTerm = searchInput.value.toLowerCase();
+        if (!searchTerm) {
+            renderProducts(userProducts); // Se a busca estiver vazia, mostra todos
+            return;
+        }
+        const filteredProducts = userProducts.filter(product => 
+            product.nome.toLowerCase().includes(searchTerm) ||
+            product.descricao.toLowerCase().includes(searchTerm)
+        );
+        renderProducts(filteredProducts);
+    };
+
     
     // Função para aplicar o filtro de pesquisa
     const applySearch = () => {
@@ -105,7 +136,8 @@ document.addEventListener('DOMContentLoaded', () => {
         renderProducts(filteredProducts);
     };
 
-    // Funções do Modal de Edição
+
+    // FUNÇÃO PARA ABRIR E PREENCHER O MODAL DE EDIÇÃO
     const openEditModal = (product) => {
         document.getElementById('editProductId').value = product.id;
         document.getElementById('editProductName').value = product.nome;
@@ -114,13 +146,15 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('editDescription').value = product.descricao;
         editModal.classList.add('show');
     };
+
+    // FUNÇÃO PARA FECHAR O MODAL DE EDIÇÃO
     const closeEditModal = () => editModal.classList.remove('show');
     modalCloseBtn.addEventListener('click', closeEditModal);
     editModal.addEventListener('click', (event) => {
         if (event.target === editModal) closeEditModal();
     });
 
-    // Função para salvar as alterações
+    // FUNÇÃO PARA SALVAR AS ALTERAÇÕES (UPDATE NO FIREBASE)
     editForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         const productId = document.getElementById('editProductId').value;
@@ -134,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await db.collection('produtos').doc(productId).update(updatedData);
             closeEditModal();
-            await loadUserProducts();
+            await loadUserProducts(); // Recarrega os produtos para mostrar os dados atualizados
             showToast("Serviço atualizado com sucesso!", "success");
         } catch (error) {
             console.error("Erro ao atualizar o produto: ", error);
@@ -144,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Função para excluir um produto
+    // FUNÇÃO PARA EXCLUIR UM PRODUTO (DELETE NO FIREBASE)
     const deleteProduct = async (productId) => {
         if (!confirm("Tem certeza de que deseja excluir este serviço? Esta ação não pode ser desfeita.")) {
             return;
@@ -152,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
         toggleLoading(true);
         try {
             await db.collection('produtos').doc(productId).delete();
-            await loadUserProducts();
+            await loadUserProducts(); // Recarrega a lista para remover o card da tela
             showToast("Serviço excluído com sucesso!", "success");
         } catch (error) {
             console.error("Erro ao excluir o produto: ", error);
