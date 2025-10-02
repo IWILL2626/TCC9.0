@@ -5,15 +5,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // ===================================================================
     // 1. CONFIGURAÇÃO DO FIREBASE (COM A CHAVE CORRETA)
     // ===================================================================
-    const firebaseConfig = {
-        apiKey: "AIzaSyAKTwMCe5sUPoZz5jwSYV1WiNmGjGxNxY8", // ✅ Verifique se esta é sua chave correta!
-        authDomain: "tcciwill.firebaseapp.com",
-        projectId: "tcciwill",
-        storageBucket: "tcciwill.appspot.com",
-        messagingSenderId: "35460029082",
-        appId: "1:35460029082:web:90ae52ac65ff355d8f9d23"
-    };
-
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyAKTwMCe5sUPoZz5jwSYV1WiNmGjGxNxY8",
+  authDomain: "tcciwill.firebaseapp.com",
+  databaseURL: "https://tcciwill-default-rtdb.firebaseio.com",
+  projectId: "tcciwill",
+  storageBucket: "tcciwill.firebasestorage.app",
+  messagingSenderId: "35460029082",
+  appId: "1:35460029082:web:2b0f014e6df1ffe58f9d23",
+  measurementId: "G-9T1Z90PPRG"
+};
     // Inicializa o Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
