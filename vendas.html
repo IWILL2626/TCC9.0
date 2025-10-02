@@ -129,11 +129,48 @@
     </main>
 
     <footer class="footer">
-        </footer>
-
-    <div id="productModal" class="modal-overlay">
+        <div class="footer-content">
+            <div class="footer-section">
+                <div class="footer-logo">
+                    <img src="img/icon.png" alt="I Will Logo" class="footer-logo-img">
+                    <span class="footer-logo-text">I Will</span>
+                </div>
+                <p>Conectando talentos e oportunidades na nossa comunidade.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Links Úteis</h4>
+                <div class="footer-links">
+                    <a href="index.html" class="footer-link">Início</a>
+                    <a href="#" class="footer-link">Categorias</a>
+                    <a href="ajuda.html" class="footer-link">Ajuda & FAQ</a>
+                    <a href="#" class="footer-link">Termos de Serviço</a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h4>Siga-nos</h4>
+                <div class="footer-social">
+                    <a href="#" class="social-icon"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
         </div>
+        <div class="footer-copyright">
+            &copy; 2024 I Will. Todos os direitos reservados.
+        </div>
+    </footer>
+    <div id="productModal" class="modal-overlay">
+        <div class="modal-content">
+            <button id="modalCloseBtn" class="modal-close-btn">&times;</button>
+            
+            <div id="modalLoader" class="loader" style="display: none;">
+                <div class="spinner"></div>
+            </div>
 
+            <div id="modalBody">
+                </div>
+        </div>
+    </div>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
