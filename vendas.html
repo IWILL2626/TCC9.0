@@ -45,6 +45,14 @@
                     <a href="ajuda.html" class="dropdown-link">
                         <i class="fas fa-question-circle"></i> Ajuda
                     </a>
+
+                    <div id="adminLinkContainer" style="display: none;">
+                        <div class="divider"></div>
+                        <a href="admin.html" class="dropdown-link">
+                            <i class="fas fa-shield-halved"></i> Painel Admin
+                        </a>
+                    </div>
+
                 </div>
             </div>
         </nav>
@@ -67,6 +75,13 @@
         <a href="ajuda.html" class="mobile-link">
             <i class="fas fa-question-circle"></i> Ajuda
         </a>
+
+        <div id="adminLinkMobileContainer" style="display: none;">
+             <a href="admin.html" class="mobile-link">
+                <i class="fas fa-shield-halved"></i> Painel Admin
+            </a>
+         </div>
+
         <div class="mobile-nav-divider"></div>
         <button id="darkModeToggleMobile">🌙 Modo Escuro</button>
         <button id="logoutBtnMobile" class="btn btn-secondary">
@@ -92,11 +107,6 @@
                 <div class="filter-options">
                     <select id="categoryFilter">
                         <option value="">Todas as categorias</option>
-                        <option value="design">Design Gráfico</option>
-                        <option value="programacao">Programação & Tech</option>
-                        <option value="marketing">Marketing Digital</option>
-                        <option value="video">Edição de Vídeo</option>
-                        <option value="redacao">Redação & Tradução</option>
                     </select>
                     <select id="ratingFilter">
                         <option value="">Qualquer avaliação</option>
@@ -119,38 +129,10 @@
     </main>
 
     <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-logo">
-                <img src="img/icon.png" alt="Ícone I Will" class="footer-logo-img logo-to-toggle">
-                <span class="footer-logo-text">I Will</span>
-            </div>
-            <div class="footer-links">
-                <a href="index.html#about-us-section" class="footer-link">Sobre</a>
-                <a href="ajuda.html" class="footer-link">Ajuda</a>
-                <a href="termos.html" class="footer-link">Termos</a>
-                <a href="privacidade.html" class="footer-link">Privacidade</a>
-            </div>
-            <div class="footer-social">
-                <a href="https://www.instagram.com/_vmasscz/" class="social-icon" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                <a href="#" class="social-icon" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
-                <a href="#" class="social-icon" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
-            </div>
-        </div>
-        <div class="footer-copyright">
-            <p>&copy; 2025 I Will - Plataforma de Serviços para Alunos da Etec. Todos os direitos reservados.</p>
-        </div>
-    </footer>
+        </footer>
 
     <div id="productModal" class="modal-overlay">
-        <div class="modal-content">
-            <button class="modal-close-btn" id="modalCloseBtn">&times;</button>
-            <div id="modalBody">
-                </div>
-             <div class="loader" id="modalLoader" style="display: none;">
-                <div class="spinner"></div>
-            </div>
         </div>
-    </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
