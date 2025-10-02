@@ -1,14 +1,27 @@
-// javascript/admin.js - VERSÃO 2.0 COM CARDS E MODAL
+// javascript/admin.js - VERSÃO 2.0 CORRIGIDA
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // 1. CONFIGURAÇÃO E INICIALIZAÇÃO DO FIREBASE (Mantido)
-    const firebaseConfig = { /* ... (seu config aqui) ... */ };
+    // ===================================================================
+    // 1. CONFIGURAÇÃO DO FIREBASE (COM A CHAVE CORRETA)
+    // ===================================================================
+    const firebaseConfig = {
+        apiKey: "AIzaSyAKTwMCe5sUPoZz5jwSYV1WiNmGjGxNxY8", // ✅ Verifique se esta é sua chave correta!
+        authDomain: "tcciwill.firebaseapp.com",
+        projectId: "tcciwill",
+        storageBucket: "tcciwill.appspot.com",
+        messagingSenderId: "35460029082",
+        appId: "1:35460029082:web:90ae52ac65ff355d8f9d23"
+    };
+
+    // Inicializa o Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    // 2. SELETORES DE ELEMENTOS DA PÁGINA (UI) - ATUALIZADO
+    // ===================================================================
+    // 2. SELETORES DE ELEMENTOS DA PÁGINA (UI)
+    // ===================================================================
     const ui = {
         loader: document.getElementById('loader'),
         servicesGrid: document.getElementById('servicesGrid'),
@@ -18,16 +31,40 @@ document.addEventListener('DOMContentLoaded', () => {
         modalCloseBtn: document.getElementById('modalCloseBtn'),
     };
 
-    let allServices = []; // Armazena todos os serviços para não precisar buscar de novo
+    let allServices = []; 
 
-    // 3. O GUARDIÃO (Verificação de Acesso - Mantido)
-    auth.onAuthStateChanged(async (user) => { /* ... (código mantido igual) ... */ });
+    // ===================================================================
+    // 3. O GUARDIÃO: VERIFICAÇÃO DE ACESSO E PERMISSÕES
+    // ===================================================================
+    auth.onAuthStateChanged(async (user) => {
+        if (user) {
+            try {
+                const userDoc = await db.collection('vendedores').doc(user.uid).get();
+                if (!userDoc.exists || !userDoc.data().isAdmin) {
+                    console.warn("Acesso negado. Este usuário não é um administrador.");
+                    alert("Acesso negado. Esta é uma área restrita para administradores.");
+                    window.location.href = 'vendas.html';
+                } else {
+                    console.log("Acesso de administrador concedido para:", user.email);
+                    loadAllServices();
+                }
+            } catch (error) {
+                console.error("Erro ao verificar permissões de administrador:", error);
+                alert("Ocorreu um erro ao verificar suas permissões.");
+                window.location.href = 'vendas.html';
+            }
+        } else {
+            console.log("Nenhum usuário logado. Redirecionando para login.");
+            window.location.href = 'login.html';
+        }
+    });
 
-    // 4. O COLETOR DE DADOS (Busca todos os serviços - Mantido)
+    // ===================================================================
+    // 4. O COLETOR DE DADOS: BUSCA TODOS OS SERVIÇOS
+    // ===================================================================
     const loadAllServices = async () => {
         ui.loader.style.display = 'flex';
         ui.servicesGrid.innerHTML = '';
-
         try {
             const snapshot = await db.collection('produtos').orderBy('criadoEm', 'desc').get();
             if (snapshot.empty) {
@@ -44,9 +81,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // 5. O CONSTRUTOR DE CARDS (Substitui o construtor de tabela)
+    // ===================================================================
+    // 5. O CONSTRUTOR DE CARDS (Com animação)
+    // ===================================================================
     const renderCards = (services) => {
-        ui.servicesGrid.innerHTML = ''; // Limpa a grade
+        ui.servicesGrid.innerHTML = ''; 
         services.forEach((service, index) => {
             const card = document.createElement('div');
             card.className = 'admin-card';
@@ -65,22 +104,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
             
-            // Adiciona o evento para abrir o modal
             card.addEventListener('click', () => showModal(service));
             ui.servicesGrid.appendChild(card);
-
-            // ANIMAÇÃO: Adiciona a classe 'visible' com um pequeno atraso para efeito cascata
+            
             setTimeout(() => {
                 card.classList.add('visible');
             }, index * 100);
         });
     };
 
-    // 6. LÓGICA DO MODAL (Novo)
+    // ===================================================================
+    // 6. LÓGICA DO MODAL
+    // ===================================================================
     const showModal = (service) => {
         const price = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(service.preco);
         const createdDate = service.criadoEm ? service.criadoEm.toDate().toLocaleDateString('pt-BR') : 'N/A';
-
         ui.modalBody.innerHTML = `
             <div class="modal-image-container">
                 <img src="${service.imagem || 'https://via.placeholder.com/400x250?text=Sem+Imagem'}" class="modal-image" alt="${service.nome}">
@@ -99,44 +137,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 </button>
             </div>
         `;
-
         ui.modal.classList.add('show');
-
-        // Adiciona evento ao novo botão de excluir dentro do modal
         ui.modal.querySelector('.btn-delete').addEventListener('click', handleDeleteService);
     };
 
-    const closeModal = () => {
-        ui.modal.classList.remove('show');
-    };
-
+    const closeModal = () => { ui.modal.classList.remove('show'); };
     ui.modalCloseBtn.addEventListener('click', closeModal);
-    ui.modal.addEventListener('click', (event) => {
-        if (event.target === ui.modal) {
-            closeModal();
-        }
-    });
+    ui.modal.addEventListener('click', (event) => { if (event.target === ui.modal) { closeModal(); } });
 
-
-    // 7. A AÇÃO DE EXCLUIR (Ligeiramente modificado para fechar o modal)
+    // ===================================================================
+    // 7. AÇÃO DE EXCLUIR
+    // ===================================================================
     const handleDeleteService = async (event) => {
         const button = event.currentTarget;
         const serviceId = button.dataset.id;
-
-        if (!confirm("Tem certeza que deseja excluir PERMANENTEMENTE este serviço?\nEsta ação não pode ser desfeita.")) {
-            return;
-        }
-
+        if (!confirm("Tem certeza que deseja excluir PERMANENTEMENTE este serviço?\nEsta ação não pode ser desfeita.")) { return; }
         try {
             button.disabled = true;
             button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Excluindo...';
-            
             await db.collection('produtos').doc(serviceId).delete();
-            
             alert("Serviço excluído com sucesso!");
-            closeModal(); // Fecha o modal após a exclusão
-            loadAllServices(); // Recarrega os cards
-
+            closeModal();
+            loadAllServices();
         } catch (error) {
             console.error("Erro ao excluir serviço:", error);
             alert("Ocorreu um erro ao excluir o serviço.");
@@ -145,7 +167,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // 8. LOGOUT (Mantido)
-    ui.logoutBtn.addEventListener('click', () => { /* ... (código mantido igual) ... */ });
-
+    // ===================================================================
+    // 8. LOGOUT
+    // ===================================================================
+    ui.logoutBtn.addEventListener('click', () => { auth.signOut().then(() => { window.location.href = 'index.html'; }); });
 });
