@@ -1,4 +1,4 @@
-// javascript/vendas.js - VERSÃO ATUALIZADA COM SISTEMA DE LIKE E CORREÇÃO DE FILTRO
+// javascript/vendas.js - VERSÃO ATUALIZADA E CORRIGIDA
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -30,21 +30,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const loader = document.getElementById('loader');
     const searchInput = document.getElementById('searchInput');
     const categoryFilter = document.getElementById('categoryFilter');
-    const ratingFilter = document.getElementById('ratingFilter'); // Mantido caso queira usar no futuro
 
     let allProducts = [];
     let currentUser = null;
+
+    const checkAdminStatus = async (user) => {
+        if (!user) return;
+        try {
+            const userDoc = await db.collection('vendedores').doc(user.uid).get();
+            if (userDoc.exists && userDoc.data().isAdmin === true) {
+                const adminLinkContainer = document.getElementById('adminLinkContainer');
+                if (adminLinkContainer) adminLinkContainer.style.display = 'block';
+
+                const adminLinkMobileContainer = document.getElementById('adminLinkMobileContainer');
+                if (adminLinkMobileContainer) adminLinkMobileContainer.style.display = 'block';
+            }
+        } catch (error) {
+            console.error("Erro ao verificar status de admin:", error);
+        }
+    };
 
     auth.onAuthStateChanged((user) => {
         if (!user) {
             window.location.href = "login.html";
         } else {
             currentUser = user;
+            checkAdminStatus(user); // CORREÇÃO APLICADA AQUI
             loadProductsFromFirestore();
         }
     });
 
-    // --- NOVA LÓGICA DO BOTÃO DE LIKE (CURTIDA) ---
     const handleLikeClick = async (button) => {
         if (!currentUser) {
             alert("Você precisa estar logado para curtir um serviço.");
@@ -55,12 +70,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const isLiked = button.classList.contains('liked');
         const productRef = db.collection('produtos').doc(productId);
 
-        // Animação e atualização visual imediata
         document.querySelectorAll(`.like-btn[data-product-id="${productId}"]`).forEach(btn => {
             btn.classList.toggle('liked');
-            btn.querySelector('i').classList.toggle('far'); // Alterna entre coração vazio
-            btn.querySelector('i').classList.toggle('fas'); // e coração cheio
-            if (!isLiked) { // Só anima ao curtir
+            btn.querySelector('i').classList.toggle('far');
+            btn.querySelector('i').classList.toggle('fas');
+            if (!isLiked) {
                 btn.classList.add('pulse-animation');
                 setTimeout(() => btn.classList.remove('pulse-animation'), 300);
             }
@@ -68,19 +82,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         try {
             if (isLiked) {
-                // Se já estava curtido, REMOVE o like do array no Firebase
-                await productRef.update({
-                    interestedUsers: firebase.firestore.FieldValue.arrayRemove(currentUser.uid)
-                });
+                await productRef.update({ interestedUsers: firebase.firestore.FieldValue.arrayRemove(currentUser.uid) });
             } else {
-                // Se não estava curtido, ADICIONA o like ao array
-                await productRef.update({
-                    interestedUsers: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)
-                });
+                await productRef.update({ interestedUsers: firebase.firestore.FieldValue.arrayUnion(currentUser.uid) });
             }
         } catch (error) {
             console.error("Erro ao atualizar curtida:", error);
-            // Reverte a mudança visual em caso de erro no banco de dados
             document.querySelectorAll(`.like-btn[data-product-id="${productId}"]`).forEach(btn => {
                 btn.classList.toggle('liked');
                 btn.querySelector('i').classList.toggle('far');
@@ -88,8 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     };
-
-    // --- LÓGICA DE RENDERIZAÇÃO E MODAL (ATUALIZADA) ---
+    
     const getSellerData = async (sellerId) => {
         if (!sellerId) return null;
         try {
@@ -113,9 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const heartIconClass = isLiked ? 'fas fa-heart' : 'far fa-heart';
         const likedClass = isLiked ? 'liked' : '';
         
-        const likeButtonHtml = `<button class="like-btn like-btn-modal ${likedClass}" data-product-id="${product.id}">
-                                    <i class="${heartIconClass}"></i>
-                                </button>`;
+        const likeButtonHtml = `<button class="like-btn like-btn-modal ${likedClass}" data-product-id="${product.id}"><i class="${heartIconClass}"></i></button>`;
 
         let sellerHtml = seller ? `
             <div class="modal-seller-info"><h3>Informações de Contato</h3>
@@ -137,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderProducts = (productsToRender) => {
         productGrid.innerHTML = '';
         if (productsToRender.length === 0) {
-            productGrid.innerHTML = "<p>Nenhum serviço encontrado para os filtros selecionados.</p>";
+            productGrid.innerHTML = "<p>Nenhum serviço encontrado.</p>";
             return;
         }
 
@@ -146,19 +150,15 @@ document.addEventListener('DOMContentLoaded', () => {
             card.className = 'product-card';
             
             const precoFormatado = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.preco);
-            
             const isLiked = product.interestedUsers && product.interestedUsers.includes(currentUser.uid);
-            const heartIconClass = isLiked ? 'fas fa-heart' : 'far fa-heart'; // Coração cheio ou vazio
+            const heartIconClass = isLiked ? 'fas fa-heart' : 'far fa-heart';
             const likedClass = isLiked ? 'liked' : '';
 
-            const likeButtonHtml = `<button class="like-btn ${likedClass}" data-product-id="${product.id}">
-                                        <i class="${heartIconClass}"></i>
-                                    </button>`;
+            const likeButtonHtml = `<button class="like-btn ${likedClass}" data-product-id="${product.id}"><i class="${heartIconClass}"></i></button>`;
 
-            // Wrapper para o conteúdo clicável que abre o modal
             const cardContentWrapper = document.createElement('div');
             cardContentWrapper.className = 'card-content-wrapper';
-            cardContentWrapper.dataset.id = product.id; // Adiciona o ID aqui para o clique
+            cardContentWrapper.dataset.id = product.id;
             cardContentWrapper.innerHTML = `
                 <div class="product-image-container">
                     <img src="${product.imagem || 'https://via.placeholder.com/400x250?text=Sem+Imagem'}" alt="${product.nome}" class="product-image">
@@ -180,13 +180,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
     
-    // --- LÓGICA DO FILTRO DE CATEGORIAS (ADICIONADA E CORRIGIDA) ---
     const populateCategoryFilter = (products) => {
         const categories = [...new Set(products.map(p => p.categoria).filter(Boolean))].sort();
-        
-        // Linha para depuração: Abra o console do navegador (F12) para ver esta mensagem
-        console.log("Categorias encontradas para o filtro:", categories);
-
         categoryFilter.innerHTML = '<option value="">Todas as categorias</option>';
         categories.forEach(category => {
             const option = document.createElement('option');
@@ -196,20 +191,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    // --- CARREGAMENTO DE DADOS E APLICAÇÃO DE FILTROS ---
     const loadProductsFromFirestore = async () => {
         loader.style.display = 'flex';
-        productGrid.innerHTML = '';
         try {
             const snapshot = await db.collection('produtos').orderBy('criadoEm', 'desc').get();
             allProducts = snapshot.empty ? [] : snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            
-            populateCategoryFilter(allProducts); // CORREÇÃO: Chama a função para popular o filtro
+            populateCategoryFilter(allProducts);
             renderProducts(allProducts);
-
         } catch (error) {
             console.error("Erro ao carregar produtos:", error);
-            productGrid.innerHTML = "<p>Ocorreu um erro ao carregar os serviços.</p>";
         } finally {
             loader.style.display = 'none';
         }
@@ -225,16 +215,11 @@ document.addEventListener('DOMContentLoaded', () => {
         renderProducts(filteredProducts);
     };
 
-    // --- EVENT LISTENERS GERAIS ---
     productGrid.addEventListener('click', (event) => {
         const likeBtn = event.target.closest('.like-btn');
         const cardWrapper = event.target.closest('.card-content-wrapper');
-
-        if (likeBtn) {
-            handleLikeClick(likeBtn);
-        } else if (cardWrapper) {
-            showProductModal(cardWrapper.dataset.id);
-        }
+        if (likeBtn) { handleLikeClick(likeBtn); } 
+        else if (cardWrapper) { showProductModal(cardWrapper.dataset.id); }
     });
 
     modalBody.addEventListener('click', (event) => {
@@ -249,8 +234,6 @@ document.addEventListener('DOMContentLoaded', () => {
     searchInput.addEventListener('input', applyFilters);
     categoryFilter.addEventListener('change', applyFilters);
     
-    // --- Restante do código para menus, logout, etc. ---
-    // (Este bloco foi mantido como no seu arquivo original)
     const settingsBtn = document.getElementById('settingsBtn');
     if (settingsBtn) { settingsBtn.addEventListener('click', (event) => { event.stopPropagation(); document.getElementById('settingsDropdown').classList.toggle('show'); }); }
     window.addEventListener('click', (event) => { const settingsDropdown = document.getElementById('settingsDropdown'); if (settingsDropdown && !settingsDropdown.previousElementSibling.contains(event.target) && !settingsDropdown.contains(event.target)) { settingsDropdown.classList.remove('show'); } });
