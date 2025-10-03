@@ -1,4 +1,4 @@
-// javascript/vendas.js - VERSÃO ATUALIZADA E CORRIGIDA
+// javascript/vendas.js - VERSÃO COMPLETA E COM DIAGNÓSTICO PARA O PAINEL ADMIN
 
 // Configuração do Firebase
 const firebaseConfig = {
@@ -34,20 +34,60 @@ document.addEventListener('DOMContentLoaded', () => {
     let allProducts = [];
     let currentUser = null;
 
+    // ==========================================================
+    // ========= FUNÇÃO DE DIAGNÓSTICO PARA O PAINEL ADMIN ======
+    // ==========================================================
     const checkAdminStatus = async (user) => {
-        if (!user) return;
+        console.log("--- INICIANDO VERIFICAÇÃO DE ADMIN ---");
+        if (!user) {
+            console.log("Usuário não encontrado, verificação cancelada.");
+            return;
+        }
+        console.log("Verificando para o usuário com UID:", user.uid);
+
         try {
             const userDoc = await db.collection('vendedores').doc(user.uid).get();
-            if (userDoc.exists && userDoc.data().isAdmin === true) {
-                const adminLinkContainer = document.getElementById('adminLinkContainer');
-                if (adminLinkContainer) adminLinkContainer.style.display = 'block';
+            
+            console.log("Documento do usuário no Firestore foi encontrado?", userDoc.exists);
 
-                const adminLinkMobileContainer = document.getElementById('adminLinkMobileContainer');
-                if (adminLinkMobileContainer) adminLinkMobileContainer.style.display = 'block';
+            if (userDoc.exists) {
+                const userData = userDoc.data();
+                console.log("Dados do usuário:", userData);
+                console.log("Valor do campo 'isAdmin':", userData.isAdmin);
+                console.log("O valor de 'isAdmin' é estritamente igual a 'true'?", userData.isAdmin === true);
+
+                if (userData.isAdmin === true) {
+                    console.log("Permissão de Admin CONFIRMADA. Tentando encontrar os botões no HTML...");
+
+                    const adminLinkContainer = document.getElementById('adminLinkContainer');
+                    const adminLinkMobileContainer = document.getElementById('adminLinkMobileContainer');
+
+                    console.log("Elemento do menu Desktop ('adminLinkContainer') encontrado?", adminLinkContainer);
+                    console.log("Elemento do menu Mobile ('adminLinkMobileContainer') encontrado?", adminLinkMobileContainer);
+                    
+                    if (adminLinkContainer) {
+                        adminLinkContainer.style.display = 'block';
+                        console.log("--> Link de Admin do DESKTOP tornado VISÍVEL.");
+                    } else {
+                        console.error("ERRO: Não foi possível encontrar o elemento com ID 'adminLinkContainer' no HTML.");
+                    }
+
+                    if (adminLinkMobileContainer) {
+                        adminLinkMobileContainer.style.display = 'block';
+                        console.log("--> Link de Admin do MOBILE tornado VISÍVEL.");
+                    } else {
+                        console.error("ERRO: Não foi possível encontrar o elemento com ID 'adminLinkMobileContainer' no HTML.");
+                    }
+                } else {
+                    console.log("Usuário não tem a permissão 'isAdmin: true'. O link não será exibido.");
+                }
+            } else {
+                console.log("Nenhum documento encontrado na coleção 'vendedores' para este UID.");
             }
         } catch (error) {
-            console.error("Erro ao verificar status de admin:", error);
+            console.error("Ocorreu um erro ao verificar o status de admin:", error);
         }
+        console.log("--- FIM DA VERIFICAÇÃO DE ADMIN ---");
     };
 
     auth.onAuthStateChanged((user) => {
@@ -55,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = "login.html";
         } else {
             currentUser = user;
-            checkAdminStatus(user); // CORREÇÃO APLICADA AQUI
+            checkAdminStatus(user);
             loadProductsFromFirestore();
         }
     });
