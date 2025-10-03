@@ -677,49 +677,50 @@ main {
     }
 }
 
-
 /* ================================================= */
-/* ========= ESTILOS BOTÃO 'TENHO INTERESSE' ======= */
+/* ========= ESTILOS BOTÃO DE LIKE (CURTIDA) ======= */
 /* ================================================= */
 
-.interest-btn {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-    color: var(--white);
+.like-btn {
+    background-color: var(--light-gray);
+    color: var(--text-light);
     border: none;
-    border-radius: 50px;
-    padding: 0.6rem 1rem;
-    font-size: 0.85rem;
-    font-weight: 500;
+    border-radius: 50%; /* Deixa o botão redondo */
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease-in-out;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    width: 100%; /* Ocupa o espaço no rodapé do card */
 }
 
-.interest-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(160, 0, 0, 0.3);
+.like-btn:hover {
+    background-color: var(--primary-light);
+    transform: scale(1.1);
 }
 
-.interest-btn:disabled {
-    background: #6c757d; /* Cinza */
-    color: #e0e0e0;
-    cursor: not-allowed;
-    box-shadow: none;
-    transform: none;
+/* Estilo para quando o coração está 'curtido' */
+.like-btn.liked {
+    color: var(--primary-color); /* Coração vermelho */
 }
 
-.interest-btn .fa-check {
-    color: #4CAF50; /* Verde para o ícone de sucesso */
+/* Efeito sutil de pulsação ao curtir */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
 }
 
-/* Estilo para o botão de interesse dentro do Modal */
-.interest-btn-modal {
-    width: auto; /* Largura automática no modal */
-    padding: 0.8rem 2rem;
-    font-size: 1rem;
-    margin-top: 1.5rem; /* Espaçamento extra */
+.like-btn.liked {
+    animation: pulse 0.3s ease-out;
+}
+
+/* Botão de Like dentro do Modal (pode ser maior) */
+.like-btn-modal {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    margin-top: 1rem;
 }
