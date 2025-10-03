@@ -13,18 +13,16 @@
     <header>
         <div class="logo">
             <img src="img/icon.png" alt="Ícone I Will" class="logo-to-toggle">
-
         </div>
         <nav>
-            <button class="btn" onclick="window.location.href='index.html'">Voltar</button>
+            <button class="btn" onclick="window.location.href='vendas.html'">Voltar</button>
         </nav>
     </header>
 
     <main>
         <section class="hero">
-            <h1>Central de Ajuda e Denúncias</h1>
+            <h1>Central de Ajuda</h1>
             <p>Encontre tutoriais para usar a plataforma ou reporte comportamentos inadequados para mantermos nossa comunidade segura.</p>
-            <button class="btn" onclick="window.location.href='login.html'">Acessar Minha Conta</button>
         </section>
 
         <div class="info-buttons">
@@ -33,24 +31,24 @@
         </div>
 
         <div id="tutoriais" class="info-content">
-            <h2 class="info-title"><i class="fas fa-graduation-cap"></i> Tutoriais</h2>
+            <h2 class="info-title"><i class="fas fa-graduation-cap"></i> Tutoriais e Perguntas Frequentes</h2>
             <div class="faq-section">
                 <div class="faq-item">
-                    <h3 class="faq-question" onclick="toggleFAQ(this)">Como me cadastrar? <span>+</span></h3>
+                    <h3 class="faq-question">Como me cadastrar? <i class="fas fa-chevron-down"></i></h3>
                     <div class="faq-answer">
                         <p>Para se cadastrar, clique no botão "Acessar Minha Conta" na página inicial e preencha o formulário com suas informações de aluno da Etec.</p>
                     </div>
                 </div>
                 <div class="faq-item">
-                    <h3 class="faq-question" onclick="toggleFAQ(this)">Como publico um serviço? <span>+</span></h3>
+                    <h3 class="faq-question">Como publico um serviço? <i class="fas fa-chevron-down"></i></h3>
                     <div class="faq-answer">
-                        <p>Após o login, acesse a página "Novo Produto". Preencha os detalhes do seu serviço, incluindo nome, descrição, preço e prazo de entrega, e clique em "Publicar".</p>
+                        <p>Após o login, acesse a página "Novo Serviço" no menu. Preencha os detalhes do seu serviço, incluindo nome, descrição, preço e uma imagem, e clique em "Publicar".</p>
                     </div>
                 </div>
                 <div class="faq-item">
-                    <h3 class="faq-question" onclick="toggleFAQ(this)">Como entro em contato com um vendedor? <span>+</span></h3>
+                    <h3 class="faq-question">Como demonstro interesse em um serviço? <i class="fas fa-chevron-down"></i></h3>
                     <div class="faq-answer">
-                        <p>No momento, o contato com o vendedor é feito diretamente pelo WhatsApp. Clique no ícone de WhatsApp no perfil do vendedor para iniciar uma conversa.</p>
+                        <p>Ao lado de cada serviço, você verá um ícone de coração. Clique nele para curtir o serviço. Isso notificará o vendedor do seu interesse, e ele poderá entrar em contato com você pelas informações no seu perfil.</p>
                     </div>
                 </div>
             </div>
@@ -62,9 +60,9 @@
                 <h2 class="info-title">Fazer uma Denúncia</h2>
             </div>
 
-            <div id="login-necessario-container">
+            <div id="login-necessario-container" style="display: none;">
                 <p>Você precisa estar logado para fazer uma denúncia.</p>
-                <button class="btn" onclick="window.location.href='login.html'">Ir para a Página de Login</button>
+                <button class="btn-login" onclick="window.location.href='login.html'">Ir para a Página de Login</button>
             </div>
 
             <form id="form-denuncia" style="display: none;">
@@ -100,7 +98,7 @@
                 <div class="feedback-message" id="feedback"></div>
 
                 <div class="form-actions">
-                    <button type="submit" class="btn" id="btn-enviar-denuncia">
+                    <button type="submit" class="btn-submit" id="btn-enviar-denuncia">
                         <span class="btn-text">Enviar Denúncia</span>
                         <span class="btn-spinner" style="display: none;"></span>
                     </button>
