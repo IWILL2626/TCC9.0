@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('myServicesSearchInput');
 
     let currentUser = null;
-    let userProducts = []; // Armazena todos os produtos do usuário para o filtro
+    let userProducts = [];
 
     // Verifica a autenticação e inicia o carregamento dos produtos
     auth.onAuthStateChanged((user) => {
@@ -34,7 +34,6 @@ document.addEventListener('DOMContentLoaded', () => {
             currentUser = user;
             loadUserProducts();
         } else {
-            // Se não estiver logado, redireciona para a página de login
             window.location.href = "login.html";
         }
     });
@@ -42,22 +41,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // FUNÇÃO PARA CARREGAR APENAS OS PRODUTOS DO USUÁRIO LOGADO
     const loadUserProducts = async () => {
         if (!currentUser) return;
-
         loader.style.display = 'flex';
         productGrid.innerHTML = '';
-
         try {
-            // A consulta filtra apenas os produtos do usuário logado
             const snapshot = await db.collection('produtos')
                                      .where("vendedorId", "==", currentUser.uid)
                                      .orderBy('criadoEm', 'desc')
                                      .get();
-
             if (snapshot.empty) {
                 productGrid.innerHTML = "<p>Você ainda não cadastrou nenhum serviço.</p>";
             } else {
                 userProducts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderProducts(userProducts); // Renderiza todos os produtos do usuário
+                renderProducts(userProducts);
             }
         } catch (error) {
             console.error("Erro ao carregar seus produtos: ", error);
@@ -67,16 +62,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // FUNÇÃO PARA RENDERIZAR OS CARDS NA TELA (com botões de ação)
+    // FUNÇÃO PARA RENDERIZAR OS CARDS NA TELA
     const renderProducts = (products) => {
         productGrid.innerHTML = '';
-
-        if (products.length === 0) {
-            productGrid.innerHTML = "<p>Nenhum serviço encontrado com o termo pesquisado.</p>";
-            return;
-        }
-
-
         if (products.length === 0) {
             productGrid.innerHTML = "<p>Nenhum serviço encontrado com o termo pesquisado.</p>";
             return;
@@ -85,44 +73,28 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.classList.add('product-card');
             card.setAttribute('data-id', product.id);
-
+            const imageUrl = product.imagem || 'https://via.placeholder.com/400x250?text=Sem+Imagem';
+            const productName = product.nome || 'Serviço sem nome';
+            const productPrice = product.preco || 0;
             card.innerHTML = `
                 <div class="product-image-container">
-                    <img src="${product.imagem}" alt="Eu vou ${product.nome}" class="product-image">
-                    <div class="product-price">${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(product.preco)}</div>
+                    <img src="${imageUrl}" alt="Eu vou ${productName}" class="product-image">
+                    <div class="product-price">${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(productPrice)}</div>
                 </div>
                 <div class="product-info">
-                    <h4 class="product-title">Eu vou ${product.nome}</h4>
+                    <h4 class="product-title">Eu vou ${productName}</h4>
                     <div class="card-actions">
                         <button class="action-btn btn-edit"><i class="fas fa-edit"></i> Editar</button>
                         <button class="action-btn btn-delete"><i class="fas fa-trash"></i> Excluir</button>
                     </div>
                 </div>`;
-            
-            // Adiciona os eventos aos botões de editar e excluir
-            card.querySelector('.btn-edit').addEventListener('click', () => openEditModal(product));
-            card.querySelector('.btn-delete').addEventListener('click', () => deleteProduct(product.id));
-
+            card.querySelector('.btn-edit').addEventListener('click', (e) => { e.stopPropagation(); openEditModal(product); });
+            card.querySelector('.btn-delete').addEventListener('click', (e) => { e.stopPropagation(); deleteProduct(product.id); });
             productGrid.appendChild(card);
         });
     };
     
-    // FUNÇÃO PARA APLICAR O FILTRO DE PESQUISA
-    const applySearch = () => {
-        const searchTerm = searchInput.value.toLowerCase();
-        if (!searchTerm) {
-            renderProducts(userProducts); // Se a busca estiver vazia, mostra todos
-            return;
-        }
-        const filteredProducts = userProducts.filter(product => 
-            product.nome.toLowerCase().includes(searchTerm) ||
-            product.descricao.toLowerCase().includes(searchTerm)
-        );
-        renderProducts(filteredProducts);
-    };
-
-    
-    // Função para aplicar o filtro de pesquisa
+    // FUNÇÃO PARA APLICAR O FILTRO DE PESQUISA (CORRIGIDA - SEM DUPLICATA)
     const applySearch = () => {
         const searchTerm = searchInput.value.toLowerCase();
         if (!searchTerm) {
@@ -130,31 +102,28 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
         const filteredProducts = userProducts.filter(product => 
-            product.nome.toLowerCase().includes(searchTerm) ||
-            product.descricao.toLowerCase().includes(searchTerm)
+            (product.nome && product.nome.toLowerCase().includes(searchTerm)) ||
+            (product.descricao && product.descricao.toLowerCase().includes(searchTerm))
         );
         renderProducts(filteredProducts);
     };
 
-
     // FUNÇÃO PARA ABRIR E PREENCHER O MODAL DE EDIÇÃO
     const openEditModal = (product) => {
         document.getElementById('editProductId').value = product.id;
-        document.getElementById('editProductName').value = product.nome;
-        document.getElementById('editPrice').value = product.preco;
-        document.getElementById('editDeliveryTime').value = product.prazo;
-        document.getElementById('editDescription').value = product.descricao;
+        document.getElementById('editProductName').value = product.nome || '';
+        document.getElementById('editPrice').value = product.preco || 0;
+        document.getElementById('editDeliveryTime').value = product.prazo || '';
+        document.getElementById('editDescription').value = product.descricao || '';
         editModal.classList.add('show');
     };
 
     // FUNÇÃO PARA FECHAR O MODAL DE EDIÇÃO
     const closeEditModal = () => editModal.classList.remove('show');
     modalCloseBtn.addEventListener('click', closeEditModal);
-    editModal.addEventListener('click', (event) => {
-        if (event.target === editModal) closeEditModal();
-    });
+    editModal.addEventListener('click', (event) => { if (event.target === editModal) closeEditModal(); });
 
-    // FUNÇÃO PARA SALVAR AS ALTERAÇÕES (UPDATE NO FIREBASE)
+    // FUNÇÃO PARA SALVAR AS ALTERAÇÕES
     editForm.addEventListener('submit', async (event) => {
         event.preventDefault();
         const productId = document.getElementById('editProductId').value;
@@ -168,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             await db.collection('produtos').doc(productId).update(updatedData);
             closeEditModal();
-            await loadUserProducts(); // Recarrega os produtos para mostrar os dados atualizados
+            await loadUserProducts();
             showToast("Serviço atualizado com sucesso!", "success");
         } catch (error) {
             console.error("Erro ao atualizar o produto: ", error);
@@ -178,15 +147,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // FUNÇÃO PARA EXCLUIR UM PRODUTO (DELETE NO FIREBASE)
+    // FUNÇÃO PARA EXCLUIR UM PRODUTO
     const deleteProduct = async (productId) => {
-        if (!confirm("Tem certeza de que deseja excluir este serviço? Esta ação não pode ser desfeita.")) {
-            return;
-        }
+        if (!confirm("Tem certeza de que deseja excluir este serviço? Esta ação não pode ser desfeita.")) return;
         toggleLoading(true);
         try {
             await db.collection('produtos').doc(productId).delete();
-            await loadUserProducts(); // Recarrega a lista para remover o card da tela
+            await loadUserProducts();
             showToast("Serviço excluído com sucesso!", "success");
         } catch (error) {
             console.error("Erro ao excluir o produto: ", error);
@@ -196,6 +163,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
-    // Adiciona o Event Listener para a barra de pesquisa
     searchInput.addEventListener('input', applySearch);
 });
